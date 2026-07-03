@@ -49,7 +49,8 @@ export function AutocompleteInput({
       if (error) throw error;
 
       if (data) {
-        const uniqueValues = [...new Set(data.map(item => String(item[fieldName])).filter(v => v))];
+        const rows = data as Record<string, unknown>[];
+        const uniqueValues = [...new Set(rows.map(item => String(item[fieldName] ?? '')).filter(Boolean))];
         setSuggestions(uniqueValues);
         setFilteredSuggestions(uniqueValues);
       }

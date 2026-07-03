@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Save, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Save } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface BenefitEvaluationFormProps {
@@ -26,15 +26,6 @@ export default function BenefitEvaluationForm({ evaluationId, onClose }: Benefit
   });
 
   const [saving, setSaving] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({
-    packageCost: false,
-    packageIncome: false,
-    packageProfit: false,
-    agencyFee: false,
-    managementFee: false,
-    propertyProfit: false,
-  });
-
   useEffect(() => {
     if (evaluationId) {
       fetchEvaluation();
@@ -46,7 +37,7 @@ export default function BenefitEvaluationForm({ evaluationId, onClose }: Benefit
       const { data, error } = await supabase
         .from('benefit_evaluations')
         .select('*')
-        .eq('id', evaluationId)
+        .eq('id', evaluationId ?? '')
         .single();
 
       if (error) throw error;
@@ -74,10 +65,6 @@ export default function BenefitEvaluationForm({ evaluationId, onClose }: Benefit
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   const calculatePersonnelCost = () => {

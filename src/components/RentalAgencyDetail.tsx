@@ -6,16 +6,16 @@ import { supabase } from '../lib/supabase';
 interface RentalAgencyCase {
   id: string;
   case_address: string;
-  property_type: string;
-  layout: string;
-  area: number;
+  property_type: string | null;
+  layout: string | null;
+  area: number | null;
   monthly_rent: number;
   photos: string[];
   features: string[];
   surroundings: string;
   description: string;
-  owner_name?: string;
-  owner_phone?: string;
+  owner_name?: string | null;
+  owner_phone?: string | null;
 }
 
 export default function RentalAgencyDetail() {
@@ -37,7 +37,7 @@ export default function RentalAgencyDetail() {
       const { data, error } = await supabase
         .from('rental_agency_cases')
         .select('*')
-        .eq('id', id)
+        .eq('id', id ?? '')
         .maybeSingle();
 
       if (error) throw error;
