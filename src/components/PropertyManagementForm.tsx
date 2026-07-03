@@ -46,14 +46,14 @@ export default function PropertyManagementForm({ caseId, onClose }: PropertyMana
       const { data, error } = await supabase
         .from('property_management_cases')
         .select('*')
-        .eq('id', caseId)
+        .eq('id', caseId ?? '')
         .single();
 
       if (error) throw error;
 
       setFormData({
         case_address: data.case_address,
-        owner_name: data.owner_name,
+        owner_name: data.owner_name || '',
         owner_phone: data.owner_phone || '',
         owner_id_number: data.owner_id_number || '',
         tenant_name: data.tenant_name || '',
@@ -61,13 +61,13 @@ export default function PropertyManagementForm({ caseId, onClose }: PropertyMana
         property_type: data.property_type || '',
         layout: data.layout || '',
         area: data.area?.toString() || '',
-        monthly_rent: data.monthly_rent.toString(),
+        monthly_rent: data.monthly_rent?.toString() || '0',
         management_fee_ratio: data.management_fee_ratio.toString(),
         management_fee: data.management_fee.toString(),
         contract_start_date: data.contract_start_date || '',
         contract_end_date: data.contract_end_date || '',
         deposit: data.deposit.toString(),
-        status: data.status,
+        status: data.status || '',
         notes: data.notes || '',
       });
     } catch (error) {

@@ -31,7 +31,7 @@ export default function QuotationManager() {
 
   const fetchQuotations = async () => {
     try {
-      let query = supabase
+      const query = supabase
         .from('quotations')
         .select('*')
         .order('created_at', { ascending: false });

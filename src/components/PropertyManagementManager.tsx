@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Table2, FileText, Link as LinkIcon, RefreshCw, FileImage, Download, Building2, DollarSign } from 'lucide-react';
-import SpreadsheetCaseManager from './SpreadsheetCaseManager';
-import CaseCardView from './CaseCardView';
+import { Link as LinkIcon, FileImage, Download, Building2, DollarSign } from 'lucide-react';
 import GoogleSheetsConfig from './GoogleSheetsConfig';
 import MonthlyBillGenerator from './MonthlyBillGenerator';
 import CaseManagement from './CaseManagement';
@@ -35,7 +33,7 @@ export default function PropertyManagementManager() {
       const { data, error } = await supabase
         .from('property_management_cases')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -45,7 +43,7 @@ export default function PropertyManagementManager() {
     }
   };
 
-  const handleSaveConfig = async (apiKey: string, spreadsheetUrl: string) => {
+  const handleSaveConfig = async () => {
     checkGoogleSheetsConnection();
   };
 

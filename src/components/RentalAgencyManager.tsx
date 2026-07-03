@@ -7,17 +7,17 @@ import RentalAgencyForm from './RentalAgencyForm';
 interface RentalAgencyCase {
   id: string;
   case_address: string;
-  property_type: string;
-  layout: string;
-  area: number;
+  property_type: string | null;
+  layout: string | null;
+  area: number | null;
   monthly_rent: number;
   photos: string[];
   features: string[];
   surroundings: string;
   description: string;
   is_public: boolean;
-  owner_name?: string;
-  owner_phone?: string;
+  owner_name?: string | null;
+  owner_phone?: string | null;
   created_at: string;
 }
 

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { AutocompleteInput } from './AutocompleteInput';
 
 type CaseType = 'package' | 'management' | 'agency';
+const db = supabase as any;
 
 interface CaseData {
   id?: string;
@@ -41,7 +42,7 @@ export default function CaseCardView({ caseType, title }: CaseCardViewProps) {
   const fetchCases = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from(tableNames[caseType])
         .select('*')
         .order('created_at', { ascending: false });
@@ -70,7 +71,7 @@ export default function CaseCardView({ caseType, title }: CaseCardViewProps) {
     if (!confirm('確定要刪除此案件嗎？')) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await db
         .from(tableNames[caseType])
         .delete()
         .eq('id', id);
@@ -104,7 +105,7 @@ export default function CaseCardView({ caseType, title }: CaseCardViewProps) {
       dataToCopy.case_address = `${caseData.case_address} (複製)`;
       dataToCopy.user_id = user?.id || null;
 
-      const { error } = await supabase
+      const { error } = await db
         .from(tableNames[caseType])
         .insert([dataToCopy]);
 
@@ -376,7 +377,7 @@ function FormModal({ caseType, caseData, onClose }: FormModalProps) {
       delete dataToSave.id;
 
       if (caseData?.id) {
-        const { error } = await supabase
+        const { error } = await db
           .from(tableNames[caseType])
           .update({ ...dataToSave, updated_at: new Date().toISOString() })
           .eq('id', caseData.id);
@@ -384,7 +385,7 @@ function FormModal({ caseType, caseData, onClose }: FormModalProps) {
         if (error) throw error;
         alert('更新成功');
       } else {
-        const { error } = await supabase
+        const { error } = await db
           .from(tableNames[caseType])
           .insert([{ ...dataToSave, user_id: user?.id || null }]);
 

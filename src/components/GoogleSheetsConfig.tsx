@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link, RefreshCw, Save, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { Link, Save, AlertCircle } from 'lucide-react';
 
 interface GoogleSheetsConfigProps {
   onClose: () => void;

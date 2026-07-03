@@ -53,7 +53,7 @@ export default function QuotationForm({ quotationId, onClose }: QuotationFormPro
       const { data: quotation, error: quotationError } = await supabase
         .from('quotations')
         .select('*')
-        .eq('id', quotationId)
+        .eq('id', quotationId ?? '')
         .single();
 
       if (quotationError) throw quotationError;
@@ -63,7 +63,7 @@ export default function QuotationForm({ quotationId, onClose }: QuotationFormPro
         business_phone: quotation.business_phone || '',
         quote_date: quotation.quote_date,
         case_address: quotation.case_address,
-        owner_name: quotation.owner_name,
+        owner_name: quotation.owner_name || '',
         owner_phone: quotation.owner_phone || '',
         case_type: quotation.case_type || '',
         total_amount: quotation.total_amount,
@@ -77,7 +77,7 @@ export default function QuotationForm({ quotationId, onClose }: QuotationFormPro
       const { data: itemsData, error: itemsError } = await supabase
         .from('quotation_items')
         .select('*')
-        .eq('quotation_id', quotationId)
+        .eq('quotation_id', quotationId ?? '')
         .order('sort_order');
 
       if (itemsError) throw itemsError;

@@ -3,6 +3,16 @@ import { Plus, Save, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 type CaseType = 'package' | 'management' | 'agency';
+const db = supabase as any;
+type CaseTableName = 'package_rental_cases' | 'property_management_cases' | 'rental_agency_cases';
+type ColumnConfig = {
+  field: string;
+  label: string;
+  type: string;
+  required?: boolean;
+  options?: string[];
+  placeholder?: string;
+};
 
 interface BaseCase {
   id?: string;
@@ -27,11 +37,10 @@ export default function SpreadsheetCaseManager({ caseType, title }: SpreadsheetC
   const userId = '00000000-0000-0000-0000-000000000000';
   const [cases, setCases] = useState<BaseCase[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const tableNames = {
+  const tableNames: Record<CaseType, CaseTableName> = {
     package: 'package_rental_cases',
     management: 'property_management_cases',
     agency: 'rental_agency_cases',
@@ -46,14 +55,14 @@ export default function SpreadsheetCaseManager({ caseType, title }: SpreadsheetC
   const fetchCases = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from(tableNames[caseType])
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCases(data || []);
+      setCases((data || []) as BaseCase[]);
     } catch (error) {
       console.error('Error fetching cases:', error);
       alert('載入案件失敗');
@@ -103,7 +112,7 @@ export default function SpreadsheetCaseManager({ caseType, title }: SpreadsheetC
       if (id.startsWith('temp-')) {
         setCases(cases.filter(c => c.id !== id));
       } else {
-        const { error } = await supabase
+        const { error } = await db
           .from(tableNames[caseType])
           .delete()
           .eq('id', id);
@@ -159,7 +168,7 @@ export default function SpreadsheetCaseManager({ caseType, title }: SpreadsheetC
       const dbIds = idsToDelete.filter(id => !id.startsWith('temp-'));
 
       if (dbIds.length > 0) {
-        const { error } = await supabase
+        const { error } = await db
           .from(tableNames[caseType])
           .delete()
           .in('id', dbIds);
@@ -187,7 +196,7 @@ export default function SpreadsheetCaseManager({ caseType, title }: SpreadsheetC
     }
 
     try {
-      const { error } = await supabase
+      const { error } = await db
         .from(tableNames[caseType])
         .delete()
         .eq('user_id', userId);
@@ -228,8 +237,8 @@ export default function SpreadsheetCaseManager({ caseType, title }: SpreadsheetC
       }
 
       if (newCases.length > 0) {
-        console.log('Inserting cases:', newCases.length, 'with user_id:', user.id);
-        const { error, data } = await supabase
+        console.log('Inserting cases:', newCases.length, 'with user_id:', userId);
+        const { error, data } = await db
           .from(tableName)
           .insert(newCases)
           .select();
@@ -241,7 +250,7 @@ export default function SpreadsheetCaseManager({ caseType, title }: SpreadsheetC
       }
 
       for (const { id, data } of updateCases) {
-        const { error } = await supabase
+        const { error } = await db
           .from(tableName)
           .update(data)
           .eq('id', id);
@@ -422,8 +431,8 @@ export default function SpreadsheetCaseManager({ caseType, title }: SpreadsheetC
   );
 }
 
-function getColumnsForType(type: CaseType) {
-  const baseColumns = [
+function getColumnsForType(type: CaseType): ColumnConfig[] {
+  const baseColumns: ColumnConfig[] = [
     { field: 'case_number', label: '案件編號', type: 'text' },
     { field: 'case_address', label: '地址', type: 'text', required: true },
     { field: 'manager_name', label: '管理人', type: 'text' },

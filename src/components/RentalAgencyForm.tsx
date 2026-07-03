@@ -51,7 +51,7 @@ export default function RentalAgencyForm({ caseId, onClose }: RentalAgencyFormPr
       const { data, error } = await supabase
         .from('rental_agency_cases')
         .select('*')
-        .eq('id', caseId)
+        .eq('id', caseId ?? '')
         .single();
 
       if (error) throw error;

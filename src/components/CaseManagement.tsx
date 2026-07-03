@@ -1,24 +1,37 @@
 import { useState, useEffect } from 'react';
-import { Building2, ChevronDown, ChevronRight, User, DoorOpen, DoorClosed, Phone, Calendar, MapPin, CreditCard as Edit2, X, Save } from 'lucide-react';
+import { Building2, ChevronDown, ChevronRight, DoorOpen, DoorClosed, Phone, Calendar, MapPin, CreditCard as Edit2, Save } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface PropertyCase {
   id: string;
-  case_number: string;
+  case_number: string | null;
   case_address: string;
+  manager_name: string | null;
   owner_name: string;
   owner_phone: string | null;
+  owner_id_number: string | null;
   tenant_name: string | null;
   tenant_phone: string | null;
   property_type: string | null;
   layout: string | null;
-  area: string | null;
+  area: string | number | null;
   monthly_rent: number | null;
+  management_fee_ratio: number | null;
   management_fee: number | null;
+  water_fee: number | null;
+  electricity_fee: number | null;
+  deposit: number | null;
   contract_start_date: string | null;
   contract_end_date: string | null;
   status: string | null;
+  payment_frequency: string | null;
+  water_electricity_billing: string | null;
   rent_payment_date: string | null;
+  utility_settlement_date: string | null;
+  payment_status: string | null;
+  commission: number | null;
+  commission_notes: string | null;
+  notes: string | null;
 }
 
 interface GroupedProperty {
@@ -87,7 +100,7 @@ export default function CaseManagement() {
       grouped.get(mainPrefix)!.push(caseItem);
     });
 
-    const result: GroupedProperty[] = Array.from(grouped.entries()).map(([mainAddress, units]) => {
+    const result: GroupedProperty[] = Array.from(grouped.entries()).map(([, units]) => {
       const displayName = units.length === 1
         ? units[0].case_address
         : extractChinesePrefix(units[0].case_address);
@@ -154,7 +167,7 @@ export default function CaseManagement() {
           tenant_phone: editingCase.tenant_phone,
           property_type: editingCase.property_type,
           layout: editingCase.layout,
-          area: editingCase.area,
+          area: editingCase.area === '' || editingCase.area === null ? null : Number(editingCase.area),
           monthly_rent: editingCase.monthly_rent,
           management_fee_ratio: editingCase.management_fee_ratio,
           management_fee: editingCase.management_fee,

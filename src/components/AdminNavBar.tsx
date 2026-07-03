@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, TrendingUp, Home as HomeIcon, Building2, Key, Menu, X, LayoutDashboard, Type } from 'lucide-react';
+import { Menu, X, LayoutDashboard, Type } from 'lucide-react';
 
 export default function AdminNavBar() {
   const navigate = useNavigate();

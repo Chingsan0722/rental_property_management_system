@@ -27,7 +27,6 @@ function GuestView() {
 }
 
 function AdminView() {
-  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<PageType>('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLargeFont, setIsLargeFont] = useState(false);

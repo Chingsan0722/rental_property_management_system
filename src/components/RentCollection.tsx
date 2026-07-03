@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 
 interface PropertyCase {
   id: string;
-  case_number: string;
+  case_number: string | null;
   case_address: string;
   tenant_name: string | null;
   monthly_rent: number | null;
@@ -15,6 +15,7 @@ interface PropertyCase {
   contract_start_date: string | null;
   status: string | null;
   utility_settlement_date: string | null;
+  payment_frequency: string | null;
   last_public_ekwh: number | null;
   recent_public_ekwh: number | null;
   last_private_ekwh: number | null;
@@ -197,7 +198,7 @@ export default function RentCollection() {
     const currentMonth = today.getMonth();
     const currentDay = today.getDate();
 
-    let nextPaymentDate = new Date(currentYear, currentMonth, paymentDay);
+    const nextPaymentDate = new Date(currentYear, currentMonth, paymentDay);
 
     if (currentDay >= paymentDay) {
       nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
