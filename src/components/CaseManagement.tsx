@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Building2, ChevronDown, ChevronRight, DoorOpen, DoorClosed, Phone, Calendar, MapPin, CreditCard as Edit2, Save } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { getCurrentUserId } from '../lib/currentUser';
+import { useAuth } from '../lib/auth';
 
 interface PropertyCase {
   id: string;
@@ -41,7 +43,7 @@ interface GroupedProperty {
 }
 
 export default function CaseManagement() {
-  const userId = '00000000-0000-0000-0000-000000000000';
+  const { canEdit } = useAuth();
   const [cases, setCases] = useState<PropertyCase[]>([]);
   const [groupedProperties, setGroupedProperties] = useState<GroupedProperty[]>([]);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
@@ -62,6 +64,7 @@ export default function CaseManagement() {
 
   const fetchCases = async () => {
     try {
+      const userId = await getCurrentUserId();
       const { data, error } = await supabase
         .from('property_management_cases')
         .select('*')
@@ -153,6 +156,10 @@ export default function CaseManagement() {
 
   const handleSave = async () => {
     if (!editingCase) return;
+    if (!canEdit) {
+      alert('此帳號僅供檢視，不能修改案件。');
+      return;
+    }
 
     setSaving(true);
     try {
@@ -296,13 +303,15 @@ export default function CaseManagement() {
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setEditingCase(singleCase)}
-                        className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
-                        title="編輯"
-                      >
-                        <Edit2 className="w-5 h-5" />
-                      </button>
+                      {canEdit && (
+                        <button
+                          onClick={() => setEditingCase(singleCase)}
+                          className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                          title="編輯"
+                        >
+                          <Edit2 className="w-5 h-5" />
+                        </button>
+                      )}
                       {singleCase.tenant_name ? (
                         <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
                           <DoorClosed className="w-4 h-4" />
@@ -400,13 +409,15 @@ export default function CaseManagement() {
                                 : 'border-orange-200 bg-orange-50'
                             }`}
                           >
-                            <button
-                              onClick={() => setEditingCase(unit)}
-                              className="absolute top-2 right-2 p-1.5 text-teal-600 hover:bg-white rounded-lg transition-colors"
-                              title="編輯"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
+                            {canEdit && (
+                              <button
+                                onClick={() => setEditingCase(unit)}
+                                className="absolute top-2 right-2 p-1.5 text-teal-600 hover:bg-white rounded-lg transition-colors"
+                                title="編輯"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                            )}
                             <div className="flex items-start justify-between mb-3 pr-8">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
