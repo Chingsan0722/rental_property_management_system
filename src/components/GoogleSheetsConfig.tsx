@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Save, AlertCircle } from 'lucide-react';
+import { AlertCircle, Link, Save } from 'lucide-react';
 
 interface GoogleSheetsConfigProps {
   onClose: () => void;
@@ -21,11 +21,6 @@ export default function GoogleSheetsConfig({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!apiKey.trim()) {
-      alert('請輸入 Google Sheets API Key');
-      return;
-    }
-
     if (!spreadsheetUrl.trim()) {
       alert('請輸入 Google Sheets 連結');
       return;
@@ -33,10 +28,17 @@ export default function GoogleSheetsConfig({
 
     setSaving(true);
     try {
-      localStorage.setItem('google_sheets_api_key', apiKey);
-      localStorage.setItem('google_sheets_url', spreadsheetUrl);
+      const trimmedApiKey = apiKey.trim();
+      const trimmedSpreadsheetUrl = spreadsheetUrl.trim();
 
-      onSave(apiKey, spreadsheetUrl);
+      if (trimmedApiKey) {
+        localStorage.setItem('google_sheets_api_key', trimmedApiKey);
+      } else {
+        localStorage.removeItem('google_sheets_api_key');
+      }
+      localStorage.setItem('google_sheets_url', trimmedSpreadsheetUrl);
+
+      onSave(trimmedApiKey, trimmedSpreadsheetUrl);
       alert('Google Sheets 設定已儲存！');
       onClose();
     } catch (error) {
@@ -58,8 +60,9 @@ export default function GoogleSheetsConfig({
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+            type="button"
           >
-            ×
+            x
           </button>
         </div>
 
@@ -67,30 +70,29 @@ export default function GoogleSheetsConfig({
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex gap-3">
             <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-yellow-800">
-              <p className="font-semibold mb-2">設定前請先完成 Google Sheets API 設定：</p>
+              <p className="font-semibold mb-2">讀取公開 Google Sheet 前請確認：</p>
               <ol className="list-decimal list-inside space-y-1">
-                <li>前往 Google Cloud Console 建立專案</li>
-                <li>啟用 Google Sheets API</li>
-                <li>建立 API 金鑰（API Key）</li>
-                <li>將您的 Google Sheet 設為「知道連結的使用者」可檢視</li>
+                <li>Google Sheet 已設為知道連結的使用者可檢視</li>
+                <li>連結保留 gid，例如 edit?gid=0#gid=0</li>
+                <li>第一列是系統欄位名稱，第二列可放中文欄位說明</li>
+                <li>API Key 可留空；只有需要寫回 Google Sheets 時才需要設定</li>
               </ol>
             </div>
           </div>
 
           <div>
             <label className="block text-lg font-semibold text-gray-700 mb-2">
-              Google Sheets API Key *
+              Google Sheets API Key
             </label>
             <input
               type="text"
-              required
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="AIzaSy..."
+              placeholder="AIzaSy...（可留空）"
               className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
             <p className="mt-2 text-sm text-gray-600">
-              從 Google Cloud Console 取得的 API 金鑰
+              從公開試算表讀取時可留空。
             </p>
           </div>
 
@@ -107,7 +109,7 @@ export default function GoogleSheetsConfig({
               className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
             <p className="mt-2 text-sm text-gray-600">
-              您的 Google Sheets 完整網址
+              請貼上完整 Google Sheets 網址。
             </p>
           </div>
 
