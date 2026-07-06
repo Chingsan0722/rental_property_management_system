@@ -6,11 +6,9 @@ import CaseManagement from './CaseManagement';
 import RentCollection from './RentCollection';
 import { GoogleSheetsService, parseGoogleSheetsUrl } from '../lib/googleSheets';
 import { supabase } from '../lib/supabase';
-import { getCurrentUserId } from '../lib/currentUser';
-import { useAuth } from '../lib/auth';
 
 export default function PropertyManagementManager() {
-  const { canEdit } = useAuth();
+  const userId = '00000000-0000-0000-0000-000000000000';
   const [activeTab, setActiveTab] = useState<'management' | 'collection' | 'billing'>('management');
   const [showConfig, setShowConfig] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -25,13 +23,13 @@ export default function PropertyManagementManager() {
   }, []);
 
   const checkGoogleSheetsConnection = () => {
+    const apiKey = localStorage.getItem('google_sheets_api_key');
     const spreadsheetUrl = localStorage.getItem('google_sheets_url');
-    setGoogleSheetsConnected(!!spreadsheetUrl);
+    setGoogleSheetsConnected(!!(apiKey && spreadsheetUrl));
   };
 
   const fetchCases = async () => {
     try {
-      const userId = await getCurrentUserId();
       const { data, error } = await supabase
         .from('property_management_cases')
         .select('*')
@@ -50,15 +48,10 @@ export default function PropertyManagementManager() {
   };
 
   const handleSyncFromGoogleSheets = async () => {
-    if (!canEdit) {
-      alert('此帳號僅供檢視，不能同步 Google Sheet。');
-      return;
-    }
-
     const apiKey = localStorage.getItem('google_sheets_api_key');
     const spreadsheetUrl = localStorage.getItem('google_sheets_url');
 
-    if (!spreadsheetUrl) {
+    if (!apiKey || !spreadsheetUrl) {
       alert('請先設定 Google Sheets 連結');
       setShowConfig(true);
       return;
@@ -67,16 +60,14 @@ export default function PropertyManagementManager() {
     setSyncing(true);
 
     try {
-      const userId = await getCurrentUserId();
       const parsed = parseGoogleSheetsUrl(spreadsheetUrl);
       if (!parsed) {
         throw new Error('無效的 Google Sheets 連結');
       }
 
       const sheetsService = new GoogleSheetsService({
-        apiKey: apiKey || undefined,
+        apiKey,
         spreadsheetId: parsed.spreadsheetId,
-        gid: parsed.gid,
       });
 
       const sheetData = await sheetsService.readData();
@@ -285,17 +276,15 @@ export default function PropertyManagementManager() {
             )}
 
             <div className="flex gap-2 ml-auto">
-              {canEdit && (
-                <button
-                  onClick={() => setShowConfig(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                >
-                  <LinkIcon className="w-4 h-4" />
-                  {googleSheetsConnected ? '重新設定' : '設定連結'}
-                </button>
-              )}
+              <button
+                onClick={() => setShowConfig(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+              >
+                <LinkIcon className="w-4 h-4" />
+                {googleSheetsConnected ? '重新設定' : '設定連結'}
+              </button>
 
-              {googleSheetsConnected && canEdit && (
+              {googleSheetsConnected && (
                 <button
                   onClick={handleSyncFromGoogleSheets}
                   disabled={syncing}

@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { getCurrentUserId } from '../lib/currentUser';
-import { useAuth } from '../lib/auth';
 
 interface PropertyManagementFormProps {
   caseId: string | null;
@@ -10,7 +8,7 @@ interface PropertyManagementFormProps {
 }
 
 export default function PropertyManagementForm({ caseId, onClose }: PropertyManagementFormProps) {
-  const { canEdit } = useAuth();
+  const userId = '00000000-0000-0000-0000-000000000000';
   const [formData, setFormData] = useState({
     case_address: '',
     owner_name: '',
@@ -91,10 +89,6 @@ export default function PropertyManagementForm({ caseId, onClose }: PropertyMana
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canEdit) {
-      alert('此帳號僅供檢視，不能儲存案件。');
-      return;
-    }
     setSaving(true);
 
     try {
@@ -130,7 +124,6 @@ export default function PropertyManagementForm({ caseId, onClose }: PropertyMana
         if (error) throw error;
         alert('案件已更新');
       } else {
-        const userId = await getCurrentUserId();
         const { error } = await supabase
           .from('property_management_cases')
           .insert([{
@@ -360,7 +353,7 @@ export default function PropertyManagementForm({ caseId, onClose }: PropertyMana
           </button>
           <button
             type="submit"
-            disabled={saving || !canEdit}
+            disabled={saving}
             className="flex-1 flex items-center justify-center space-x-2 bg-blue-600 text-white px-6 py-3 text-lg rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
           >
             <Save className="w-5 h-5" />
