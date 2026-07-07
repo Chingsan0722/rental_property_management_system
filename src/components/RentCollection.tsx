@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar, DollarSign, AlertCircle, CheckCircle2, XCircle, Filter } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { getCurrentUserId } from '../lib/currentUser';
 
 interface PropertyCase {
   id: string;
@@ -25,7 +26,6 @@ interface PropertyCase {
 type PaymentStatus = 'need_payment' | 'no_payment_needed' | 'overdue';
 
 export default function RentCollection() {
-  const userId = '00000000-0000-0000-0000-000000000000';
   const [cases, setCases] = useState<PropertyCase[]>([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -38,6 +38,7 @@ export default function RentCollection() {
 
   const fetchCases = async () => {
     try {
+      const userId = await getCurrentUserId();
       const { data, error } = await supabase
         .from('property_management_cases')
         .select('*')

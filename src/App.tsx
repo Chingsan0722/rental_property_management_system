@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
-import { FileText, TrendingUp, Home as HomeIcon, Building2, Key, Menu, X, LayoutDashboard, Type } from 'lucide-react';
+import { FileText, TrendingUp, Home as HomeIcon, Building2, Key, Menu, X, LayoutDashboard, Type, LogOut, Shield, Eye } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import QuotationManager from './components/QuotationManager';
 import BenefitEvaluationManager from './components/BenefitEvaluationManager';
@@ -10,6 +10,8 @@ import RentalAgencyManager from './components/RentalAgencyManager';
 import RentalAgencyDetail from './components/RentalAgencyDetail';
 import AdminNavBar from './components/AdminNavBar';
 import Header from './components/Header';
+import LoginPage from './components/LoginPage';
+import { AuthProvider, useAuth } from './lib/auth';
 
 type PageType = 'home' | 'quotation' | 'benefit' | 'package' | 'management' | 'agency';
 
@@ -27,6 +29,7 @@ function GuestView() {
 }
 
 function AdminView() {
+  const { user, role, canEdit, signOut } = useAuth();
   const [currentPage, setCurrentPage] = useState<PageType>('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLargeFont, setIsLargeFont] = useState(false);
@@ -87,6 +90,12 @@ function AdminView() {
             </button>
 
             <div className="flex items-center gap-3">
+              <div className="hidden lg:flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700">
+                {canEdit ? <Shield className="w-4 h-4 text-teal-600" /> : <Eye className="w-4 h-4 text-blue-600" />}
+                <span>{canEdit ? '管理員' : '僅供檢視'}</span>
+                <span className="text-gray-400">|</span>
+                <span className="max-w-48 truncate">{user?.email}</span>
+              </div>
               <button
                 onClick={() => setCurrentPage('home')}
                 className={`hidden md:flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${textSize.nav} ${
@@ -105,6 +114,14 @@ function AdminView() {
                 title="字體大小"
               >
                 <Type className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={() => signOut()}
+                className={`hidden md:flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${textSize.nav} text-gray-700 hover:bg-gray-100`}
+                title="登出"
+              >
+                <LogOut className="w-5 h-5" />
               </button>
 
               <button
@@ -138,6 +155,13 @@ function AdminView() {
 
           {mobileMenuOpen && (
             <div className="md:hidden pb-4 space-y-2">
+              <div className="px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 text-sm text-gray-700">
+                <div className="flex items-center gap-2 font-medium">
+                  {role === 'admin' ? <Shield className="w-4 h-4 text-teal-600" /> : <Eye className="w-4 h-4 text-blue-600" />}
+                  <span>{role === 'admin' ? '管理員' : '僅供檢視'}</span>
+                </div>
+                <div className="text-gray-500 truncate mt-1">{user?.email}</div>
+              </div>
               <button
                 onClick={() => {
                   setCurrentPage('home');
@@ -185,6 +209,13 @@ function AdminView() {
                   <Type className="w-5 h-5" />
                   <span className="font-medium">{isLargeFont ? '標準字體' : '放大字體'}</span>
                 </button>
+                <button
+                  onClick={() => signOut()}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${textSize.button} text-gray-700 hover:bg-gray-100`}
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="font-medium">登出</span>
+                </button>
               </div>
             </div>
           )}
@@ -193,6 +224,45 @@ function AdminView() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {renderPage()}
+      </main>
+    </div>
+  );
+}
+
+function ProtectedAdminView() {
+  const { session, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 via-white to-red-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+      </div>
+    );
+  }
+
+  return session ? <AdminView /> : <LoginPage />;
+}
+
+function ProtectedRentalAgencyDetail() {
+  const { session, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 via-white to-red-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <LoginPage />;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-red-50">
+      <AdminNavBar />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <RentalAgencyDetail />
       </main>
     </div>
   );
@@ -210,25 +280,20 @@ function AppRoutes() {
           </main>
         </div>
       } />
-      <Route path="/admin" element={<AdminView />} />
-      <Route path="/admin/rental-agency/:id" element={
-        <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-red-50">
-          <AdminNavBar />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <RentalAgencyDetail />
-          </main>
-        </div>
-      } />
-      <Route path="/" element={<AdminView />} />
+      <Route path="/admin" element={<ProtectedAdminView />} />
+      <Route path="/admin/rental-agency/:id" element={<ProtectedRentalAgencyDetail />} />
+      <Route path="/" element={<ProtectedAdminView />} />
     </Routes>
   );
 }
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
